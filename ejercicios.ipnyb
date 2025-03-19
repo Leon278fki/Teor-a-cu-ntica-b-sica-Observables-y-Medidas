@@ -1,0 +1,468 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Teoría cuántica básica, Observables y Medidas\n",
+    "## Simule el primer sistema cuántico descrito en la sección 4.1.\n",
+    "\n",
+    "El sistema consiste en una partícula confinada a un conjunto discreto de posiciones en una línea. El simulador debe permitir especificar el número de posiciones y un vector ket de estado asignando las amplitudes.\n",
+    "\n",
+    "1. El sistema debe calcular la probabilidad de encontrarlo en una posición en particular.\n",
+    "### RTA:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "La probabilidad de encontrar la particula en la posicion dada es: 6.4 %\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "def norma(a):\n",
+    "    norma = np.linalg.norm(a)\n",
+    "    return norma\n",
+    "\n",
+    "def probabilidad_posicion(ket, position):\n",
+    "    numerador = norma(ket[position]) ** 2\n",
+    "    denominador = norma(ket) ** 2\n",
+    "    return numerador /denominador\n",
+    "\n",
+    "\n",
+    "def main():\n",
+    "    ket = np.array([[-2+3j], [1-2.5j], [1+1j], [0+3j]])\n",
+    "    probabilidad = probabilidad_posicion(ket, 2)\n",
+    "    print(\"La probabilidad de encontrar la particula en la posicion dada es:\", probabilidad*100, \"%\")\n",
+    "main()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "2. El sistema si se le da otro vector Ket debe buscar la probabilidad de transitar del primer vector al segundo.\n",
+    "### RTA:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "La probabilidad de transitar del vector [[2.-1.j]\n",
+      " [0.+3.j]] al vector [[1.+1.j ]\n",
+      " [2.-1.2j]] es: 15.760000000000002\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "def transition_probability(ket1, ket2):\n",
+    "    \n",
+    "    producto_interno = np.vdot(ket2, ket1)\n",
+    "    \n",
+    "    transition_prob = np.abs(producto_interno)**2\n",
+    "    \n",
+    "    return transition_prob\n",
+    "def main():\n",
+    "    ket1 = np.array([[2-1j], [0+3j]])\n",
+    "    ket2 = np.array([[1+1j], [2-1.2j]])\n",
+    "    transicion_f = transition_probability(ket1, ket2)\n",
+    "    print(f\"La probabilidad de transitar del vector {ket1} al vector {ket2} es:\", transicion_f)\n",
+    "main()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Complete los retos de programación del capítulo 4.\n",
+    "1. Amplitud de transición. El sistema puede recibir dos vectores y calcular la probabilidad de transitar de el uno al otro después de hacer la observación\n",
+    "### RTA:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Amplitud de transición ⟨ket2|ket1⟩: (-0.2547550855426267+0.29394817562610764j)\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "def is_normalized(ket, tol=1e-10):\n",
+    "\n",
+    "    norm = np.linalg.norm(ket)\n",
+    "    return np.abs(norm - 1) < tol\n",
+    "\n",
+    "def normalizado(ket):\n",
+    "    \n",
+    "    if not is_normalized(ket):\n",
+    "        ket = normalize(ket)\n",
+    "    return ket\n",
+    "\n",
+    "def normalize(ket):\n",
+    "\n",
+    "    norm = np.linalg.norm(ket)\n",
+    "    \n",
+    "    return ket / norm\n",
+    "\n",
+    "\n",
+    "def transition_amplitude(ket1, ket2):\n",
+    "    \n",
+    "    # Producto interno ⟨ket2|ket1⟩, que es la amplitud de transición\n",
+    "    amplitude = np.vdot(ket2, ket1)\n",
+    "    \n",
+    "    return amplitude\n",
+    "\n",
+    "def main():\n",
+    "    ket1 = np.array([[2-1j], [0+3j]])\n",
+    "    ket2 = np.array([[1+1j], [2-1.2j]])\n",
+    "\n",
+    "    ket1=normalizado(ket1)\n",
+    "    ket2=normalizado(ket2)\n",
+    "\n",
+    "    amplitude = transition_amplitude(ket1, ket2)\n",
+    "    print(f\"Amplitud de transición ⟨ket2|ket1⟩: {amplitude}\")\n",
+    "main()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "2. Ahora con una matriz que describa un observable y un vector ket, el sistema revisa que la matriz sea hermitiana, y si lo es, calcula la media y la varianza del observable en el estado dado.\n",
+    "### RTA:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "La matriz es hermitiana.\n",
+      "Valor esperado ⟨A⟩: (31+0j)\n",
+      "Varianza: (-834+0j)\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "def is_hermitian(matrix, tol=1e-10):\n",
+    "    return np.allclose(matrix, np.conjugate(matrix.T), atol=tol)\n",
+    "\n",
+    "def expectation_value(matrix, ket):\n",
+    "    return np.vdot(ket, np.dot(matrix, ket))\n",
+    "\n",
+    "def variance(matrix, ket):\n",
+    "\n",
+    "    expectation = expectation_value(matrix, ket)\n",
+    "    \n",
+    "    matrix_squared = np.dot(matrix, matrix)\n",
+    "    expectation_squared = expectation_value(matrix_squared, ket)\n",
+    "    \n",
+    "    variance = expectation_squared - np.abs(expectation)**2\n",
+    "    \n",
+    "    return variance\n",
+    "\n",
+    "observable = np.array([[1, 2j, 0],\n",
+    "                       [-2j, 3, 0],\n",
+    "                       [0, 0, 2]])\n",
+    "\n",
+    "ket = [1+0j, 3+1j, 1+1j]\n",
+    "\n",
+    "if is_hermitian(observable):\n",
+    "    print(\"La matriz es hermitiana.\")\n",
+    "    \n",
+    "    expected_value = expectation_value(observable, ket)\n",
+    "    print(f\"Valor esperado ⟨A⟩: {expected_value}\")\n",
+    "    \n",
+    "    var = variance(observable, ket)\n",
+    "    print(f\"Varianza: {var}\")\n",
+    "else:\n",
+    "    print(\"La matriz no es hermitiana.\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "3. El sistema calcula los valores propios del observable y la probabilidad de que el sistema transite a alguno de los vectores propios después de la observación.\n",
+    "### RTA:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "La matriz es hermitiana.\n",
+      "Valores propios: [-0.23606798  2.          4.23606798]\n",
+      "Vectores propios:\n",
+      "[[-0.85065081+0.j          0.        +0.j          0.52573111+0.j        ]\n",
+      " [ 0.        -0.52573111j  0.        +0.j          0.        -0.85065081j]\n",
+      " [ 0.        +0.j          1.        +0.j          0.        +0.j        ]]\n",
+      "Probabilidad de transitar al vector propio 0: 2.9999999999999987\n",
+      "Probabilidad de transitar al vector propio 1: 9.0\n",
+      "Probabilidad de transitar al vector propio 2: 2.9999999999999987\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "def is_hermitian(matrix, tol=1e-10):\n",
+    "    return np.allclose(matrix, np.conjugate(matrix.T), atol=tol)\n",
+    "\n",
+    "def eigenvalues_and_eigenvectors(matrix):\n",
+    "    \n",
+    "    eigenvalues, eigenvectors = np.linalg.eigh(matrix)  # eigh para matrices hermitianas\n",
+    "    return eigenvalues, eigenvectors\n",
+    "\n",
+    "def transition_probabilities_to_eigenstates(ket, eigenvectors):\n",
+    "\n",
+    "    ket = np.array(ket, dtype=complex)\n",
+    "    probabilities = []\n",
+    "    \n",
+    "    for eigenvector in eigenvectors.T:\n",
+    "        amplitude = np.vdot(eigenvector, ket)  # Producto interno entre el ket y el vector propio\n",
+    "        probability = np.abs(amplitude)**2  # Probabilidad es el valor absoluto al cuadrado\n",
+    "        probabilities.append(probability)\n",
+    "    \n",
+    "    return probabilities\n",
+    "\n",
+    "\n",
+    "observable = np.array([[1, 2j, 0],\n",
+    "                       [-2j, 3, 0],\n",
+    "                       [0, 0, 2]])\n",
+    "\n",
+    "ket = [1+0j, 2+1j, 3+0j]\n",
+    "\n",
+    "if is_hermitian(observable):\n",
+    "    print(\"La matriz es hermitiana.\")\n",
+    "    \n",
+    "    eigenvalues, eigenvectors = eigenvalues_and_eigenvectors(observable)\n",
+    "    print(f\"Valores propios: {eigenvalues}\")\n",
+    "    print(f\"Vectores propios:\\n{eigenvectors}\")\n",
+    "    \n",
+    "    transition_probs = transition_probabilities_to_eigenstates(ket, eigenvectors)\n",
+    "    \n",
+    "    for i, prob in enumerate(transition_probs):\n",
+    "        print(f\"Probabilidad de transitar al vector propio {i}: {prob}\")\n",
+    "else:\n",
+    "    print(\"La matriz no es hermitiana.\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "4. Se considera la dinámica del sistema. Ahora con una serie de matrices Un el sistema calcula el estado final a partir de un estado inicial.\n",
+    "### RTA:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Exercise 4.3.1 Find all the possible states the system described in Exercise 4.2.2 can transition into after a measurement has been carried out."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Valores propios:\n",
+      "[ 1.+0.j -1.+0.j]\n",
+      "\n",
+      "Vectores propios:\n",
+      "[[ 0.70710678-0.j  0.70710678+0.j]\n",
+      " [ 0.70710678+0.j -0.70710678-0.j]]\n",
+      "Esto significa que hay dos posibles estados a los que se puede transitar, spin up y spin down, sin embargo el observable hara que siempre sea spin down\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "Sx = np.array([[0, 1],[1, 0]], dtype=complex)\n",
+    "\n",
+    "eigenvalues, eigenvectors = np.linalg.eig(Sx)\n",
+    "\n",
+    "print(\"Valores propios:\")\n",
+    "print(eigenvalues)\n",
+    "\n",
+    "print(\"\\nVectores propios:\")\n",
+    "print(eigenvectors)\n",
+    "print(\"Esto significa que hay dos posibles estados a los que se puede transitar, spin up y spin down, sin embargo el observable hara que siempre sea spin down\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "4.4.1 Exercise 4.4.1 Verifique que:\n",
+    "$$ \n",
+    "    \\begin{bmatrix} 0 && 1 \\\\\n",
+    "                   1 && 0 \\\\\n",
+    "    \\end{bmatrix}\n",
+    "    \\begin{bmatrix}  √2/2 && √2/2 \\\\\n",
+    "                   √2/2 && -√2/2 \\\\\n",
+    "    \\end{bmatrix}$$\n",
+    "son matrices unitarias. Multiplícalos y verifica que su producto también sea unitario."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Matriz 1 unitaria= True\n",
+      "Matriz 2 unitaria= True\n",
+      "Producto unitario= True\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "def is_unitary(matrix):\n",
+    "    if matrix.shape[0] != matrix.shape[1]:\n",
+    "        return False\n",
+    "    identity = np.eye(matrix.shape[0])\n",
+    "    product = np.dot(matrix, matrix.conj().T)\n",
+    "    return np.allclose(product, identity)\n",
+    "    \n",
+    "matrix1 = np.array([[0, 1], [1, 0]])\n",
+    "matrix2 = np.array([[np.sqrt(2)/2, np.sqrt(2)/2], [np.sqrt(2)/2, -np.sqrt(2)/2]])\n",
+    "producto = np.dot(matrix1,matrix2)\n",
+    "\n",
+    "print(\"Matriz 1 unitaria=\", is_unitary(matrix1))\n",
+    "print(\"Matriz 2 unitaria=\", is_unitary(matrix2))\n",
+    "print(\"Producto unitario=\", is_unitary(producto))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "4.4.2 Determinar el estado del sistema después de tres pasos de tiempo. ¿Cuál es la probabilidad de que la bola cuántica se encuentre en el punto 3?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Resultado despues de un click:  [[0.        +0.j        ]\n",
+      " [0.        +0.70710678j]\n",
+      " [0.70710678+0.j        ]\n",
+      " [0.        +0.j        ]]\n",
+      "Resultado despues de dos click:  [[ 0.5+0.5j]\n",
+      " [ 0. +0.j ]\n",
+      " [ 0. +0.j ]\n",
+      " [-0.5+0.5j]]\n",
+      "Resultado despues de tres click  [[ 0.        +0.j        ]\n",
+      " [-0.70710678+0.70710678j]\n",
+      " [ 0.        +0.j        ]\n",
+      " [ 0.        +0.j        ]]\n",
+      "La probablidad es [0.+0.j]\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "m1 = np.array([[0,1/np.sqrt(2),1/np.sqrt(2),0], \n",
+    "               [1j/np.sqrt(2),0,0,1/np.sqrt(2)], \n",
+    "               [1/np.sqrt(2),0,0,1j/np.sqrt(2)],\n",
+    "               [0,1/np.sqrt(2),-1/np.sqrt(2),0]])\n",
+    "\n",
+    "v1 = np.array([[1], [0], [0], [0]])\n",
+    "click1 = np.dot(m1, v1)\n",
+    "click2 = np.dot(m1, click1)\n",
+    "click3 = np.dot(m1, click2)\n",
+    "\n",
+    "print(\"Resultado despues de un click: \", click1)\n",
+    "print(\"Resultado despues de dos click: \", click2)\n",
+    "print(\"Resultado despues de tres click \", click3)\n",
+    "norma = np.linalg.norm(click3)\n",
+    "probabilidad = (click3[2]*(np.conj(click3[2])))/(norma**2)\n",
+    "print(\"La probablidad es\",probabilidad)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

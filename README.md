@@ -37,6 +37,4 @@ Completado el proceso anterior podrá trabajar con la librería proporcionada.
 * Jupyter
 
 # Archivos
-Se encontraran dos archivos los cuales son:
-EJERCICIOS.pbyn: Hoja de trabajo de jupyter donde estan los ejercicios solicitados.
 Readme
